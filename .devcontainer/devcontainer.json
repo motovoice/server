@@ -1,0 +1,31 @@
+{
+  "name": "MotoVoice Backend",
+  "dockerComposeFile": "docker-compose.devcontainer.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+
+  "forwardPorts": [3000, 5432, 6379, 7880],
+  "portsAttributes": {
+    "3000": { "label": "Backend API" },
+    "5432": { "label": "PostgreSQL" },
+    "6379": { "label": "Redis" },
+    "7880": { "label": "LiveKit" }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-typescript-next",
+        "ms-azuretools.vscode-docker",
+        "cweijan.vscode-database-client2"
+      ],
+      "settings": {
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  },
+
+  "postCreateCommand": "npm install",
+  "remoteUser": "node"
+}

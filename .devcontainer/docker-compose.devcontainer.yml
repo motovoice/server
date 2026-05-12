@@ -1,0 +1,62 @@
+services:
+  app:
+    image: node:20-alpine
+    volumes:
+      - ..:/workspace:cached
+    working_dir: /workspace
+    command: sleep infinity
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET}
+      POSTGRES_URL: postgresql://${POSTGRES_USER:-motovoice}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-motovoice}
+      LIVEKIT_URL: ${LIVEKIT_URL}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+    ports:
+      - "3000:3000"
+    networks:
+      - devcontainer
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-motovoice}
+      POSTGRES_USER: ${POSTGRES_USER:-motovoice}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pg_dev_data:/var/lib/postgresql/data
+      - ../postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - devcontainer
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U motovoice"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  livekit-dev:
+    image: livekit/livekit-server:latest
+    command: --config /etc/livekit/config.yaml
+    environment:
+      LIVEKIT_URL: ${LIVEKIT_URL}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+    volumes:
+      - ../livekit/config.yaml:/etc/livekit/config.yaml:ro
+    ports:
+      - "7880:7880"
+      - "7881:7881"       # RTC TCP
+      - "50020-50040:50020-50040/udp"  # RTC UDP (Media)
+    networks:
+      - devcontainer
+
+volumes:
+  pg_dev_data:
+  redis_dev_data:
+
+networks:
+  devcontainer:
+    driver: bridge

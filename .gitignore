@@ -1,0 +1,18 @@
+.env
+nginx/ssl/
+config.yaml
+
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Build
+src/dist/
+package-lock.json
+
+# Certbot (wird zur Laufzeit befüllt)
+certbot/
+
+# OS
+.DS_Store
+Thumbs.db
