@@ -20,10 +20,10 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Body: CreateRoomBody }>('/rooms', async (req, reply) => {
     const displayName = req.body?.displayName || 'Host';
 
-    const result = await db.query<{ id: string; expires_at: Date }>(
+    const result = await db.query<{ id: string; expires_at: Date; delete_secret: string }>(
       `INSERT INTO rooms (created_by, host_identity)
        VALUES ($1, $1)
-       RETURNING id, expires_at`,
+       RETURNING id, expires_at, delete_secret`,
       [displayName]
     );
     const room = result.rows[0];
@@ -42,6 +42,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       expiresAt:    room.expires_at,
       qrPayload:    `motovoice://join?room=${room.id}`,
       hostIdentity: displayName,
+      deleteSecret: room.delete_secret,
     });
   });
 
@@ -137,6 +138,26 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: RoomParams }>('/rooms/:id', async (req, reply) => {
     const { id } = req.params;
 
+    const authHeader = req.headers['authorization'];
+    const secret = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+    if (!secret) {
+      return reply.status(403).send({ error: 'Missing delete secret' });
+    }
+
+    const roomResult = await db.query<{ delete_secret: string }>(
+      `SELECT delete_secret FROM rooms WHERE id = $1`,
+      [id]
+    );
+
+    if (roomResult.rows.length === 0) {
+      return reply.status(404).send({ error: 'Room not found' });
+    }
+
+    if (roomResult.rows[0].delete_secret !== secret) {
+      return reply.status(403).send({ error: 'Invalid delete secret' });
+    }
+
     await db.query(
       `UPDATE rooms SET is_active = false WHERE id = $1`,
       [id]
@@ -145,7 +166,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
     try {
       await roomService.deleteRoom(id);
     } catch {
-      // catch if room is already deleted
+      // room may already be deleted in LiveKit
     }
 
     return reply.status(204).send();

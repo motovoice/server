@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS rooms (
     expires_at      TIMESTAMPTZ NOT NULL DEFAULT (now() + INTERVAL '24 hours'),
     created_by      TEXT,
     participant_count INTEGER NOT NULL DEFAULT 0,
-    is_active       BOOLEAN NOT NULL DEFAULT true
+    is_active       BOOLEAN NOT NULL DEFAULT true,
+    delete_secret   UUID NOT NULL DEFAULT gen_random_uuid()
 );
 
 -- Index for faster lookups
