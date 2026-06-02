@@ -14,10 +14,42 @@ interface RoomParams {
   id: string;
 }
 
+// ─── Shared schema fragments ───────────────────────────────────
+const roomIdParam = {
+  type: 'object',
+  properties: { id: { type: 'string', format: 'uuid', description: 'Room ID' } },
+  required: ['id'],
+} as const;
+
 export const roomRoutes: FastifyPluginAsync = async (app) => {
 
   // ─── POST /api/rooms — Create new room ────────────────────
-  app.post<{ Body: CreateRoomBody }>('/rooms', async (req, reply) => {
+  app.post<{ Body: CreateRoomBody }>('/rooms', {
+    schema: {
+      tags: ['Rooms'],
+      summary: 'Create a new room',
+      body: {
+        type: 'object',
+        properties: {
+          displayName: { type: 'string', description: 'Host display name', default: 'Host' },
+        },
+      },
+      response: {
+        201: {
+          type: 'object',
+          properties: {
+            roomId:       { type: 'string', format: 'uuid' },
+            livekitToken: { type: 'string' },
+            livekitUrl:   { type: 'string' },
+            expiresAt:    { type: 'string', format: 'date-time' },
+            qrPayload:    { type: 'string' },
+            hostIdentity: { type: 'string' },
+            deleteSecret: { type: 'string', format: 'uuid', description: 'Required to delete this room — store securely' },
+          },
+        },
+      },
+    },
+  }, async (req, reply) => {
     const displayName = req.body?.displayName || 'Host';
 
     const result = await db.query<{ id: string; expires_at: Date; delete_secret: string }>(
@@ -49,6 +81,33 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
   // ─── POST /api/rooms/:id/join — Join room ─────────────────
   app.post<{ Params: RoomParams; Body: JoinRoomBody }>(
     '/rooms/:id/join',
+    {
+      schema: {
+        tags: ['Rooms'],
+        summary: 'Join an existing room as a guest',
+        params: roomIdParam,
+        body: {
+          type: 'object',
+          required: ['displayName'],
+          properties: {
+            displayName: { type: 'string', description: 'Guest display name' },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              roomId:       { type: 'string', format: 'uuid' },
+              livekitToken: { type: 'string' },
+              livekitUrl:   { type: 'string' },
+              hostIdentity: { type: 'string' },
+            },
+          },
+          400: { type: 'object', properties: { error: { type: 'string' } } },
+          404: { type: 'object', properties: { error: { type: 'string' } } },
+        },
+      },
+    },
     async (req, reply) => {
       const { id } = req.params;
       const { displayName } = req.body;
@@ -89,6 +148,25 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
   // ─── POST /api/rooms/:id/leave — Leave room ──────────────
   app.post<{ Params: RoomParams; Body: JoinRoomBody }>(
     '/rooms/:id/leave',
+    {
+      schema: {
+        tags: ['Rooms'],
+        summary: 'Leave a room',
+        params: roomIdParam,
+        body: {
+          type: 'object',
+          required: ['displayName'],
+          properties: {
+            displayName: { type: 'string' },
+          },
+        },
+        response: {
+          204: { type: 'null', description: 'Successfully left' },
+          400: { type: 'object', properties: { error: { type: 'string' } } },
+          404: { type: 'object', properties: { error: { type: 'string' } } },
+        },
+      },
+    },
     async (req, reply) => {
       const { id } = req.params;
       const { displayName } = req.body;
@@ -118,7 +196,26 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
   );
 
   // ─── GET /api/rooms/:id — Get room status ─────────────────
-  app.get<{ Params: RoomParams }>('/rooms/:id', async (req, reply) => {
+  app.get<{ Params: RoomParams }>('/rooms/:id', {
+    schema: {
+      tags: ['Rooms'],
+      summary: 'Get room status',
+      params: roomIdParam,
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            id:                { type: 'string', format: 'uuid' },
+            created_at:        { type: 'string', format: 'date-time' },
+            expires_at:        { type: 'string', format: 'date-time' },
+            participant_count: { type: 'integer' },
+            is_active:         { type: 'boolean' },
+          },
+        },
+        404: { type: 'object', properties: { error: { type: 'string' } } },
+      },
+    },
+  }, async (req, reply) => {
     const { id } = req.params;
 
     const result = await db.query(
@@ -135,7 +232,20 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
   });
 
   // ─── DELETE /api/rooms/:id — Close livekit room ──────────────
-  app.delete<{ Params: RoomParams }>('/rooms/:id', async (req, reply) => {
+  app.delete<{ Params: RoomParams }>('/rooms/:id', {
+    schema: {
+      tags: ['Rooms'],
+      summary: 'Delete a room',
+      description: 'Requires the `deleteSecret` returned by POST /api/rooms as a Bearer token.',
+      security: [{ deleteSecret: [] }],
+      params: roomIdParam,
+      response: {
+        204: { type: 'null', description: 'Room deleted' },
+        403: { type: 'object', properties: { error: { type: 'string' } } },
+        404: { type: 'object', properties: { error: { type: 'string' } } },
+      },
+    },
+  }, async (req, reply) => {
     const { id } = req.params;
 
     const authHeader = req.headers['authorization'];

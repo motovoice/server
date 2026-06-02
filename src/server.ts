@@ -2,6 +2,8 @@ import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import { roomRoutes } from './routes/rooms.js';
 import { db } from './services/db.js';
 
@@ -15,6 +17,30 @@ await app.register(cors, {
 
 await app.register(jwt, {
   secret: process.env.JWT_SECRET!,
+});
+
+await app.register(swagger, {
+  openapi: {
+    info: {
+      title: 'MotoVoice API',
+      description: 'Backend API for MotoVoice — motorcycle group voice communication',
+      version: '1.0.0',
+    },
+    components: {
+      securitySchemes: {
+        deleteSecret: {
+          type: 'http',
+          scheme: 'bearer',
+          description: 'Room delete secret returned by POST /api/rooms',
+        },
+      },
+    },
+  },
+});
+
+await app.register(swaggerUi, {
+  routePrefix: '/docs',
+  uiConfig: { docExpansion: 'list' },
 });
 
 // ─── Routes ───────────────────────────────────────────────────

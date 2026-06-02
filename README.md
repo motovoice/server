@@ -6,7 +6,7 @@ Simple self-hosted group voice chat over IP
 
 | Service    | Image                      | Port (internal) | Purpose                        |
 |------------|----------------------------|-----------------|--------------------------------|
-| postgres   | postgres:16-alpine         | 5432            | Database (rooms, events)       |
+| postgres   | postgres:17-alpine         | 5432            | Database (rooms, events)       |
 | livekit    | livekit/livekit-server     | 7880/7881/TCP   | Audio routing (WebRTC/Opus)    |
 | backend    | (custom build)             | 3000            | REST API (rooms, JWT, QR)      |
 | nginx      | nginx:alpine               | 443             | Reverse proxy + TLS            |
@@ -53,52 +53,10 @@ docker compose up -d
 # You can use the nginx/nginx.example.conf as template
 ```
 
-## API Endpoints
+## API Docs
 
-### Create room
-```http
-POST /api/rooms
-Content-Type: application/json
+Swagger API Docs available under /docs
 
-{ "displayName": "Peter" }
-```
-**Response:**
-```json
-{
-  "roomId": "uuid",
-  "livekitToken": "eyJ...",
-  "livekitUrl": "wss://livekit.your-domain.com",
-  "expiresAt": "2024-...",
-  "qrPayload": "motovoice://join?room=uuid",
-  "hostIdentity": "Peter"
-}
-```
-
-### Join room (after QR scan)
-```http
-POST /api/rooms/:id/join
-Content-Type: application/json
-
-{ "displayName": "Stefan" }
-```
-
-### Leave room
-```http
-POST /api/rooms/:id/leave
-Content-Type: application/json
-
-{ "displayName": "Stefan" }
-```
-
-### Room status
-```http
-GET /api/rooms/:id
-```
-
-### Close room
-```http
-DELETE /api/rooms/:id
-```
 
 ## Architecture
 
