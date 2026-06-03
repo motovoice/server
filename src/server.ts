@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
+import { version } from '../package.json' assert { type: 'json' };
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import swagger from '@fastify/swagger';
@@ -54,6 +55,7 @@ app.get<{ Params: { id: string } }>('/join/:id', async (req, reply) => {
 
 app.get('/health', async () => ({
   status: 'ok',
+  version,
   timestamp: new Date().toISOString(),
 }));
 
