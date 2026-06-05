@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
-import { version } from '../package.json' assert { type: 'json' };
+import { createRequire } from 'module';
+const { version } = createRequire(import.meta.url)('../package.json');
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import swagger from '@fastify/swagger';
