@@ -58,18 +58,5 @@ services:
       timeout: 5s
       retries: 5
 
-  # ─── Nginx Reverse Proxy (you can also use any other reverse proxy) ───────────────────────────────────────
-  # nginx:
-  #   image: nginx:alpine
-  #   restart: unless-stopped
-  #   ports:
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-  #     - ./nginx/ssl:/etc/nginx/ssl:ro
-  #   networks:
-  #     - internal
-  #     - public
-
 volumes:
   pg_data:
