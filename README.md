@@ -5,47 +5,51 @@ Simple self-hosted group voice chat server over IP
 ## Prerequisites
 
 - Docker + Docker Compose installed
-- Domain with A-records pointing to the server IP:
+- Domain with A-records pointing to your server:
   - `api.your-domain.com`
   - `livekit.your-domain.com`
-- Open firewall ports: `443`, `7881` (TCP), `50000–60000` (UDP)
 
 ## Quick Start
 
+### 1. Clone repo
+Download the docker-compose file: `wget https://github.com/motovoice/server/blob/main/docker-compose.yml`
+
+### 2. Create .env
+Create a .env file ([Example](https://github.com/motovoice/server/blob/main/.env.example))
+
+### 3. Generate secure secrets
 ```bash
-# 1. Clone repo
-git clone https://github.com/motovoice/server
-
-# 3. Generate secure secrets
 openssl rand -hex 32   # → POSTGRES_PASSWORD
 openssl rand -hex 64   # → JWT_SECRET
 openssl rand -hex 32   # → LIVEKIT_API_SECRET
-
-# 2. Create and fill in .env
-cp .env.example .env
-nano .env
-
-# 3. Generate secure secrets
-openssl rand -hex 32   # → POSTGRES_PASSWORD
-openssl rand -hex 64   # → JWT_SECRET
-openssl rand -hex 32   # → LIVEKIT_API_SECRET
-
-# 4. Copy livekit config and optionally modify it
-cp livekit/config.example.yaml livekit/config.yaml
-
-# 5. Build container
-docker compose build --no-cache
-
-# 6. Start containers
-docker compose up -d
-
-# 7. Setup your reverse proxy
-# You can use the nginx/nginx.example.conf as template
 ```
+
+### 2. Edit .env
+- Insert the generated secrets in the .env file
+- Edit the LIVEKIT_URL
+
+### 4. Create a livekit config ([Example](https://github.com/motovoice/server/blob/main/livekit/config.example.yaml))
+- `mkdir livekit`
+- `nano livekit/config.yaml`
+
+### 6. Start containers
+`docker compose up -d`
+
+### 7. Setup your reverse proxy
+- You can use the nginx/nginx.example.conf as template
+- But you can also use any other reverse proxy
+- Consider rate limiting in your reverse proxy
+- Forward Port 443 of your public backend domain to your backend container port 3000
+- Forward Port 443 of your public livekit domain to your livekit container port 7880
+
+### 8. Firewall rules
+- Allow port 443/TCP for the reverse proxy
+- Allow port 7881/TCP for the livekit container
+- Allow port 50000-60000/UDP for the livekit container
 
 ## API Docs
 
-Swagger API Docs available under /docs
+Swagger API Docs available under /docs after starting the backend.
 
 
 ## Architecture
@@ -55,11 +59,11 @@ Internet
     │
     ├── [ Livekit :7881/TCP, :50000-60000/UDP ]
     ▼
-[ Nginx :443 ]
+[ Reverse Proxy :443 ]
     │
-    ├── /api/*  ──────► [ Backend :3000 ]
-    │                         │
-    │                    [ Postgres ]
+    ├── /*  ──────► [ Backend :3000 ]
+    │                      │
+    │                 [ Postgres ]
     │
     └── WebSocket ─► [ LiveKit :7880 ]             
 ```
