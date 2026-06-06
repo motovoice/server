@@ -1,16 +1,6 @@
-# 🏍️ MotoVoice — Server Backend
+# MotoVoice — Server Backend
 
-Simple self-hosted group voice chat over IP
-
-## Stack Overview
-
-| Service    | Image                      | Port (internal) | Purpose                        |
-|------------|----------------------------|-----------------|--------------------------------|
-| postgres   | postgres:17-alpine         | 5432            | Database (rooms, events)       |
-| livekit    | livekit/livekit-server     | 7880/7881/TCP   | Audio routing (WebRTC/Opus)    |
-| backend    | (custom build)             | 3000            | REST API (rooms, JWT, QR)      |
-| nginx      | nginx:alpine               | 443             | Reverse proxy + TLS            |
-|
+Simple self-hosted group voice chat server over IP
 
 ## Prerequisites
 

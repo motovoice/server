@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS rooms (
 );
 
 -- Index for faster lookups
-CREATE INDEX idx_rooms_active ON rooms (id) WHERE is_active = true;
-CREATE INDEX idx_rooms_expires ON rooms (expires_at);
+CREATE INDEX IF NOT EXISTS idx_rooms_active ON rooms (id) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_rooms_expires ON rooms (expires_at);
 
 -- ─── Cleanup Function ─────────────
 CREATE OR REPLACE FUNCTION deactivate_expired_rooms()
@@ -40,4 +40,4 @@ CREATE TABLE IF NOT EXISTS room_events (
     occurred_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_room_events_room ON room_events (room_id);
+CREATE INDEX IF NOT EXISTS idx_room_events_room ON room_events (room_id);

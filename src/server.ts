@@ -8,6 +8,7 @@ import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { roomRoutes } from './routes/rooms.js';
 import { db } from './services/db.js';
+import { runMigrations } from './services/migrate.js';
 
 const app = Fastify({ logger: true });
 
@@ -72,6 +73,8 @@ setInterval(async () => {
 }, 60 * 60 * 1000); // hourly
 
 // ─── Start ────────────────────────────────────────────────────
+await runMigrations();
+
 const port = Number(process.env.PORT) || 3000;
 await app.listen({ port, host: '0.0.0.0' });
 app.log.info(`MotoVoice server running on port ${port}`);
