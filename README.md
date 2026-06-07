@@ -11,8 +11,8 @@ Simple self-hosted group voice chat server over IP
 
 ## Quick Start
 
-### 1. Clone repo
-Download the docker-compose file: `wget https://github.com/motovoice/server/blob/main/docker/docker-compose.yml`
+### 1. Get docker-compose file
+`wget https://github.com/motovoice/server/blob/main/docker/docker-compose.yml`
 
 ### 2. Create .env
 Create a .env file ([Example](https://github.com/motovoice/server/blob/main/docker/.env.example))
