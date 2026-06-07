@@ -26,8 +26,8 @@ await app.register(swagger, {
   openapi: {
     info: {
       title: 'MotoVoice API',
-      description: 'Backend API for MotoVoice — motorcycle group voice communication',
-      version: '1.0.0',
+      description: 'Backend API for MotoVoice',
+      version: version,
     },
     components: {
       securitySchemes: {
