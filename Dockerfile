@@ -20,7 +20,7 @@ COPY package*.json ./
 RUN npm install && npm ci --omit=dev && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
-COPY postgres/init.sql ./init.sql
+COPY postgres/init.sql ./postgres/init.sql
 
 RUN addgroup -S motovoice && adduser -S motovoice -G motovoice
 USER motovoice
