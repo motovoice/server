@@ -10,7 +10,11 @@ import { roomRoutes } from './routes/rooms.js';
 import { db } from './services/db.js';
 import { runMigrations } from './services/migrate.js';
 
-const app = Fastify({ logger: true });
+const app = Fastify({
+  logger: {
+    level: process.env.LOG_LEVEL || 'info',
+  },
+});
 
 // ─── Plugins ──────────────────────────────────────────────────
 await app.register(cors, {

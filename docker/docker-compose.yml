@@ -40,6 +40,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       JWT_SECRET: ${JWT_SECRET}
       POSTGRES_URL: postgresql://${POSTGRES_USER:-motovoice}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-motovoice}
       LIVEKIT_URL: ${LIVEKIT_URL}
