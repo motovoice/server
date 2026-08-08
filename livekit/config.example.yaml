@@ -1,14 +1,11 @@
 port: 7880
 rtc:
   tcp_port: 7881
-  port_range_start: 50000
-  port_range_end: 60000
-  # use_external_ip should be set to true for most cloud environments where
-  # the host has a public IP address, but is not exposed to the process.
-  # LiveKit will attempt to use STUN to discover the true IP, and advertise
-  # that IP with its clients
+  udp_port: 7882
+  # use_external_ip should be true for most cloud environments.
   use_external_ip: true
-
+keys:
+  motovoice_key: <ENTER_LIVEKIT_KEY_HERE>
 room:
   departure_timeout: 900
   empty_timeout: 900
@@ -16,8 +13,6 @@ room:
   # only allow audio
   enabled_codecs:
     - mime: audio/opus
-
-# Logging
 logging:
   level: info
   pion_level: error
