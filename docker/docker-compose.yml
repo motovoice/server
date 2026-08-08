@@ -43,7 +43,8 @@ services:
       LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
+      - "[::1]:3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
