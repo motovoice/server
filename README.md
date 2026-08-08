@@ -44,8 +44,8 @@ openssl rand -hex 32   # → LIVEKIT_API_SECRET
 
 ### 8. Firewall rules
 - Allow port 443/TCP for the reverse proxy
-- Allow port 7881/TCP for the livekit container
-- Allow port 50000-60000/UDP for the livekit container
+- Allow port 7881/TCP for livekit
+- Allow port 7882/UDP for livekit
 
 ## API Docs
 
@@ -57,7 +57,7 @@ Swagger API Docs available under /docs after starting the backend.
 ```
 Internet
     │
-    ├── [ Livekit :7881/TCP, :50000-60000/UDP ]
+    ├── [ Livekit :7881/TCP, :7882/UDP ]
     ▼
 [ Reverse Proxy :443 ]
     │
