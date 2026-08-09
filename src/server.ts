@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { timingSafeEqual } from 'crypto';
 import Fastify from 'fastify';
 import { createRequire } from 'module';
 const { version } = createRequire(import.meta.url)('../package.json');
@@ -40,6 +41,12 @@ await app.register(swagger, {
           scheme: 'bearer',
           description: 'Room delete secret returned by POST /api/rooms',
         },
+        serverPassword: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-Server-Password',
+          description: 'Server access password. Only required if SERVER_PASSWORD is set on the server.',
+        },
       },
     },
   },
@@ -49,6 +56,29 @@ await app.register(swaggerUi, {
   routePrefix: '/docs',
   uiConfig: { docExpansion: 'list' },
 });
+
+// ─── Optional server password ──────────────────────────────────
+// If SERVER_PASSWORD is set, all /api requests must send it via the
+// X-Server-Password header. Leave unset to disable this check.
+const serverPassword = process.env.SERVER_PASSWORD;
+if (serverPassword) {
+  const expected = Buffer.from(serverPassword);
+  app.addHook('onRequest', async (req, reply) => {
+    if (!req.url.startsWith('/api')) return;
+
+    const provided = req.headers['x-server-password'];
+    const providedBuf = Buffer.from(typeof provided === 'string' ? provided : '');
+
+    const valid =
+      providedBuf.length === expected.length &&
+      timingSafeEqual(providedBuf, expected);
+
+    if (!valid) {
+      return reply.status(401).send({ error: 'Invalid or missing server password' });
+    }
+  });
+  app.log.info('Server password protection enabled for /api');
+}
 
 // ─── Routes ───────────────────────────────────────────────────
 await app.register(roomRoutes, { prefix: '/api' });
@@ -62,6 +92,7 @@ app.get<{ Params: { id: string } }>('/join/:id', async (req, reply) => {
 app.get('/health', async () => ({
   status: 'ok',
   version,
+  authRequired: !!serverPassword,
   timestamp: new Date().toISOString(),
 }));
 

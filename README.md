@@ -51,6 +51,12 @@ openssl rand -hex 32   # → LIVEKIT_API_SECRET
 
 Swagger API Docs available under /docs after starting the backend.
 
+## Optional password protection
+
+Set `SERVER_PASSWORD` in your `.env` to require all `/api/*` requests to
+include a matching `X-Server-Password` header. Leave it empty/unset to keep
+the server open
+
 
 ## Architecture
 
