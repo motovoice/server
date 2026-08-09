@@ -37,7 +37,11 @@ CREATE TABLE IF NOT EXISTS room_events (
     room_id    UUID REFERENCES rooms(id) ON DELETE CASCADE,
     event_type TEXT NOT NULL,   -- 'created' | 'joined' | 'left' | 'expired'
     display_name TEXT,
+    device_id_hash TEXT,        -- SHA-256 of the client's anonymous device ID, if sent
     occurred_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+ALTER TABLE room_events ADD COLUMN IF NOT EXISTS device_id_hash TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_room_events_room ON room_events (room_id);
+CREATE INDEX IF NOT EXISTS idx_room_events_stats ON room_events (event_type, occurred_at, device_id_hash);

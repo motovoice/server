@@ -1,6 +1,15 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { db } from '../services/db.js';
+import { hashDeviceId } from '../services/deviceId.js';
 import { createLiveKitToken, roomService } from '../services/livekit.js';
+
+// Anonymous, client-generated device ID (e.g. random UUID) sent for usage
+// stats. Optional — absent for older clients
+function getDeviceIdHash(req: FastifyRequest): string | null {
+  const header = req.headers['x-device-id'];
+  const deviceId = Array.isArray(header) ? header[0] : header;
+  return deviceId ? hashDeviceId(deviceId) : null;
+}
 
 interface CreateRoomBody {
   displayName?: string;
@@ -21,6 +30,18 @@ const roomIdParam = {
   required: ['id'],
 } as const;
 
+const deviceIdHeader = {
+  type: 'object',
+  properties: {
+    'x-device-id': {
+      type: 'string',
+      description:
+        'Optional, client-generated random ID (e.g. UUID) for anonymous usage stats. ' +
+        'Hashed before storage; never linked to displayName or IP.',
+    },
+  },
+} as const;
+
 export const roomRoutes: FastifyPluginAsync = async (app) => {
 
   // ─── POST /api/rooms — Create new room ────────────────────
@@ -29,6 +50,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       tags: ['Rooms'],
       summary: 'Create a new room',
       security: [{}, { serverPassword: [] }],
+      headers: deviceIdHeader,
       body: {
         type: 'object',
         properties: {
@@ -62,8 +84,8 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
     const room = result.rows[0];
 
     await db.query(
-      `INSERT INTO room_events (room_id, event_type, display_name) VALUES ($1, 'created', $2)`,
-      [room.id, displayName]
+      `INSERT INTO room_events (room_id, event_type, display_name, device_id_hash) VALUES ($1, 'created', $2, $3)`,
+      [room.id, displayName, getDeviceIdHash(req)]
     );
 
     const livekitToken = await createLiveKitToken(room.id, displayName, true);
@@ -87,6 +109,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
         tags: ['Rooms'],
         summary: 'Join an existing room as a guest',
         security: [{}, { serverPassword: [] }],
+        headers: deviceIdHeader,
         params: roomIdParam,
         body: {
           type: 'object',
@@ -132,8 +155,8 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       );
 
       await db.query(
-        `INSERT INTO room_events (room_id, event_type, display_name) VALUES ($1, 'joined', $2)`,
-        [id, displayName]
+        `INSERT INTO room_events (room_id, event_type, display_name, device_id_hash) VALUES ($1, 'joined', $2, $3)`,
+        [id, displayName, getDeviceIdHash(req)]
       );
 
       const livekitToken = await createLiveKitToken(id, displayName, false);
@@ -155,6 +178,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
         tags: ['Rooms'],
         summary: 'Leave a room',
         security: [{}, { serverPassword: [] }],
+        headers: deviceIdHeader,
         params: roomIdParam,
         body: {
           type: 'object',
@@ -190,8 +214,8 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       }
 
       await db.query(
-        `INSERT INTO room_events (room_id, event_type, display_name) VALUES ($1, 'left', $2)`,
-        [id, displayName]
+        `INSERT INTO room_events (room_id, event_type, display_name, device_id_hash) VALUES ($1, 'left', $2, $3)`,
+        [id, displayName, getDeviceIdHash(req)]
       );
 
       return reply.status(204).send();
