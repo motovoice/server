@@ -8,6 +8,7 @@ backend/node_modules/
 
 # Build
 src/dist/
+dist/
 package-lock.json
 
 # Certbot (wird zur Laufzeit befüllt)

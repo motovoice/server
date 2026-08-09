@@ -57,6 +57,10 @@ Set `SERVER_PASSWORD` in your `.env` to require all `/api/*` requests to
 include a matching `X-Server-Password` header. Leave it empty/unset to keep
 the server open
 
+## Stats API (for Grafana etc.)
+
+Set `STATS_TOKEN` in your `.env` to enable a set of read-only, private
+endpoints for dashboards
 
 ## Architecture
 
