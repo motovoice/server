@@ -8,6 +8,7 @@ import jwt from '@fastify/jwt';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { roomRoutes } from './routes/rooms.js';
+import { statsRoutes } from './routes/stats.js';
 import { db } from './services/db.js';
 import { runMigrations } from './services/migrate.js';
 
@@ -47,6 +48,12 @@ await app.register(swagger, {
           name: 'X-Server-Password',
           description: 'Server access password. Only required if SERVER_PASSWORD is set on the server.',
         },
+        statsToken: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-Stats-Token',
+          description: 'Private token for the stats API. Endpoints are disabled unless STATS_TOKEN is set on the server.',
+        },
       },
     },
   },
@@ -64,7 +71,8 @@ const serverPassword = process.env.SERVER_PASSWORD;
 if (serverPassword) {
   const expected = Buffer.from(serverPassword);
   app.addHook('onRequest', async (req, reply) => {
-    if (!req.url.startsWith('/api')) return;
+    // /api/stats has its own, independent STATS_TOKEN check.
+    if (!req.url.startsWith('/api') || req.url.startsWith('/api/stats')) return;
 
     const provided = req.headers['x-server-password'];
     const providedBuf = Buffer.from(typeof provided === 'string' ? provided : '');
@@ -82,6 +90,7 @@ if (serverPassword) {
 
 // ─── Routes ───────────────────────────────────────────────────
 await app.register(roomRoutes, { prefix: '/api' });
+await app.register(statsRoutes, { prefix: '/api' });
 
 // Deep link redirect: /join/<roomId> → motovoice://join?room=<roomId>
 app.get<{ Params: { id: string } }>('/join/:id', async (req, reply) => {
