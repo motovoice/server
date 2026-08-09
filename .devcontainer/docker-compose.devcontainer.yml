@@ -9,6 +9,7 @@ services:
       NODE_ENV: development
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET}
+      SERVER_PASSWORD: ${SERVER_PASSWORD:-}
       POSTGRES_URL: postgresql://${POSTGRES_USER:-motovoice}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-motovoice}
       LIVEKIT_URL: ${LIVEKIT_URL}
       LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
@@ -48,7 +49,7 @@ services:
     ports:
       - "7880:7880"
       - "7881:7881"       # RTC TCP
-      - "50020-50040:50020-50040/udp"  # RTC UDP (Media)
+      - "7882:7882/udp"  # RTC UDP (Media)
     networks:
       - devcontainer
 

@@ -28,6 +28,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
     schema: {
       tags: ['Rooms'],
       summary: 'Create a new room',
+      security: [{}, { serverPassword: [] }],
       body: {
         type: 'object',
         properties: {
@@ -85,6 +86,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       schema: {
         tags: ['Rooms'],
         summary: 'Join an existing room as a guest',
+        security: [{}, { serverPassword: [] }],
         params: roomIdParam,
         body: {
           type: 'object',
@@ -152,6 +154,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       schema: {
         tags: ['Rooms'],
         summary: 'Leave a room',
+        security: [{}, { serverPassword: [] }],
         params: roomIdParam,
         body: {
           type: 'object',
@@ -200,6 +203,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
     schema: {
       tags: ['Rooms'],
       summary: 'Get room status',
+      security: [{}, { serverPassword: [] }],
       params: roomIdParam,
       response: {
         200: {
@@ -237,7 +241,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       tags: ['Rooms'],
       summary: 'Delete a room',
       description: 'Requires the `deleteSecret` returned by POST /api/rooms as a Bearer token.',
-      security: [{ deleteSecret: [] }],
+      security: [{ deleteSecret: [] }, { deleteSecret: [], serverPassword: [] }],
       params: roomIdParam,
       response: {
         204: { type: 'null', description: 'Room deleted' },
