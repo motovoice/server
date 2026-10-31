@@ -40,8 +40,14 @@ fi
 ok "Docker + Compose + openssl available."
 
 # ----------------------------------------------------------------------
-# Ask for domain
+# Ask for domains
 # ----------------------------------------------------------------------
+# No placeholder default: it would end up in every invite link via PUBLIC_URL.
+API_DOMAIN=""
+while [[ -z "$API_DOMAIN" ]]; do
+  read -rp "Public domain (e.g. api.your-domain.com): " API_DOMAIN
+done
+
 read -rp "LiveKit domain (e.g. livekit.your-domain.com): " LIVEKIT_DOMAIN
 LIVEKIT_DOMAIN="${LIVEKIT_DOMAIN:-livekit.your-domain.com}"
 
@@ -89,6 +95,9 @@ JWT_SECRET=${JWT_SECRET}
 
 SERVER_PASSWORD=
 STATS_TOKEN=
+
+# Public base URL of this API, embedded in invite links
+PUBLIC_URL=https://${API_DOMAIN}
 
 # LiveKit
 LIVEKIT_URL=wss://${LIVEKIT_DOMAIN}
@@ -146,7 +155,7 @@ $(ok "Done!")
 Directory: $INSTALL_DIR
 
 Still to do manually (see README):
-  1. DNS: point A records for api.your-domain.com and ${LIVEKIT_DOMAIN}
+  1. DNS: point A records for ${API_DOMAIN} and ${LIVEKIT_DOMAIN}
      to this server.
   2. Reverse proxy (443) -> backend :3000 and LiveKit WS :7880.
      Template: nginx/nginx.example.conf in the repo.
@@ -155,6 +164,6 @@ Still to do manually (see README):
        7881/TCP         (LiveKit)
        7882/UDP         (LiveKit)
 
-  Health: https://api.your-domain.com/health (after proxy setup)
+  Health: https://${API_DOMAIN}/health (after proxy setup)
 
 EOF
