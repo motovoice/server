@@ -76,6 +76,14 @@ Set `SERVER_PASSWORD` in your `.env` to require all `/api/*` requests to
 include a matching `X-Server-Password` header. Leave it empty/unset to keep
 the server open
 
+## Invite links
+
+`/join/<roomId>` redirects to `motovoice://join?room=<roomId>&server=<url>`, so
+the app can join rooms on a server other than the one it is configured for.
+The server URL is taken from `PUBLIC_URL` in your `.env`, or derived from the
+request if unset. In that case your reverse proxy must forward `Host` and
+`X-Forwarded-Proto` (as in the nginx example).
+
 ## Stats API (for Grafana etc.)
 
 Set `STATS_TOKEN` in your `.env` to enable a set of read-only, private

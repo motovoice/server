@@ -10,9 +10,13 @@ import swaggerUi from '@fastify/swagger-ui';
 import { roomRoutes } from './routes/rooms.js';
 import { statsRoutes } from './routes/stats.js';
 import { db } from './services/db.js';
+import { buildInviteUri, getPublicBaseUrl } from './services/invite.js';
 import { runMigrations } from './services/migrate.js';
 
 const app = Fastify({
+  // Behind a reverse proxy: honour X-Forwarded-Proto/Host so invite links
+  // carry the public URL. The port is only bound to localhost.
+  trustProxy: true,
   logger: {
     level: process.env.LOG_LEVEL || 'info',
   },
@@ -92,10 +96,19 @@ if (serverPassword) {
 await app.register(roomRoutes, { prefix: '/api' });
 await app.register(statsRoutes, { prefix: '/api' });
 
-// Deep link redirect: /join/<roomId> → motovoice://join?room=<roomId>
-app.get<{ Params: { id: string } }>('/join/:id', async (req, reply) => {
+// Deep link redirect: /join/<roomId> → motovoice://join?room=<roomId>&server=<public URL>
+app.get<{ Params: { id: string } }>('/join/:id', {
+  schema: {
+    hide: true,
+    params: {
+      type: 'object',
+      properties: { id: { type: 'string', format: 'uuid' } },
+      required: ['id'],
+    },
+  },
+}, async (req, reply) => {
   const { id } = req.params;
-  return reply.redirect(`motovoice://join?room=${id}`, 302);
+  return reply.redirect(buildInviteUri(id, getPublicBaseUrl(req)), 302);
 });
 
 app.get('/health', async () => ({

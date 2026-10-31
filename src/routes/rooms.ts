@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { db } from '../services/db.js';
 import { hashDeviceId } from '../services/deviceId.js';
+import { buildInviteUri, getPublicBaseUrl } from '../services/invite.js';
 import { createLiveKitToken, roomService } from '../services/livekit.js';
 
 // Anonymous, client-generated device ID (e.g. random UUID) sent for usage
@@ -65,7 +66,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
             livekitToken: { type: 'string' },
             livekitUrl:   { type: 'string' },
             expiresAt:    { type: 'string', format: 'date-time' },
-            qrPayload:    { type: 'string' },
+            qrPayload:    { type: 'string', deprecated: true, description: 'Invite deep link. Deprecated: newer apps build it client-side' },
             hostIdentity: { type: 'string' },
             deleteSecret: { type: 'string', format: 'uuid', description: 'Required to delete this room — store securely' },
           },
@@ -95,7 +96,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       livekitToken,
       livekitUrl:   process.env.LIVEKIT_URL,
       expiresAt:    room.expires_at,
-      qrPayload:    `motovoice://join?room=${room.id}`,
+      qrPayload:    buildInviteUri(room.id, getPublicBaseUrl(req)),
       hostIdentity: displayName,
       deleteSecret: room.delete_secret,
     });
