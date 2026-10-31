@@ -72,9 +72,10 @@ Swagger API Docs available under /docs after starting the backend.
 
 ## Optional password protection
 
-Set `SERVER_PASSWORD` in your `.env` to require all `/api/*` requests to
-include a matching `X-Server-Password` header. Leave it empty/unset to keep
-the server open
+Set `SERVER_PASSWORD` in your `.env` to require a matching `X-Server-Password`
+header for creating channels (`POST /api/rooms`). Joining needs no password:
+anyone with an invite link or QR code can join that channel until it ends.
+Leave it empty/unset to keep the server open
 
 ## Invite links
 

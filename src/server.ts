@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import { timingSafeEqual } from 'crypto';
 import Fastify from 'fastify';
 import { createRequire } from 'module';
 const { version } = createRequire(import.meta.url)('../package.json');
@@ -12,6 +11,7 @@ import { statsRoutes } from './routes/stats.js';
 import { db } from './services/db.js';
 import { buildInviteUri, getPublicBaseUrl } from './services/invite.js';
 import { runMigrations } from './services/migrate.js';
+import { authRequired } from './services/serverPassword.js';
 
 const app = Fastify({
   // Behind a reverse proxy: honour X-Forwarded-Proto/Host so invite links
@@ -50,7 +50,7 @@ await app.register(swagger, {
           type: 'apiKey',
           in: 'header',
           name: 'X-Server-Password',
-          description: 'Server access password. Only required if SERVER_PASSWORD is set on the server.',
+          description: 'Server password for creating rooms. Only required if SERVER_PASSWORD is set on the server.',
         },
         statsToken: {
           type: 'apiKey',
@@ -67,30 +67,6 @@ await app.register(swaggerUi, {
   routePrefix: '/docs',
   uiConfig: { docExpansion: 'list' },
 });
-
-// ─── Optional server password ──────────────────────────────────
-// If SERVER_PASSWORD is set, all /api requests must send it via the
-// X-Server-Password header. Leave unset to disable this check.
-const serverPassword = process.env.SERVER_PASSWORD;
-if (serverPassword) {
-  const expected = Buffer.from(serverPassword);
-  app.addHook('onRequest', async (req, reply) => {
-    // /api/stats has its own, independent STATS_TOKEN check.
-    if (!req.url.startsWith('/api') || req.url.startsWith('/api/stats')) return;
-
-    const provided = req.headers['x-server-password'];
-    const providedBuf = Buffer.from(typeof provided === 'string' ? provided : '');
-
-    const valid =
-      providedBuf.length === expected.length &&
-      timingSafeEqual(providedBuf, expected);
-
-    if (!valid) {
-      return reply.status(401).send({ error: 'Invalid or missing server password' });
-    }
-  });
-  app.log.info('Server password protection enabled for /api');
-}
 
 // ─── Routes ───────────────────────────────────────────────────
 await app.register(roomRoutes, { prefix: '/api' });
@@ -114,7 +90,7 @@ app.get<{ Params: { id: string } }>('/join/:id', {
 app.get('/health', async () => ({
   status: 'ok',
   version,
-  authRequired: !!serverPassword,
+  authRequired,
   timestamp: new Date().toISOString(),
 }));
 

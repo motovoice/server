@@ -3,6 +3,7 @@ import { db } from '../services/db.js';
 import { hashDeviceId } from '../services/deviceId.js';
 import { buildInviteUri, getPublicBaseUrl } from '../services/invite.js';
 import { createLiveKitToken, roomService } from '../services/livekit.js';
+import { requireServerPassword } from '../services/serverPassword.js';
 
 // Anonymous, client-generated device ID (e.g. random UUID) sent for usage
 // stats. Optional — absent for older clients
@@ -47,6 +48,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
 
   // ─── POST /api/rooms — Create new room ────────────────────
   app.post<{ Body: CreateRoomBody }>('/rooms', {
+    onRequest: requireServerPassword,
     schema: {
       tags: ['Rooms'],
       summary: 'Create a new room',
@@ -71,6 +73,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
             deleteSecret: { type: 'string', format: 'uuid', description: 'Required to delete this room — store securely' },
           },
         },
+        401: { type: 'object', properties: { error: { type: 'string' } } },
       },
     },
   }, async (req, reply) => {
@@ -109,7 +112,6 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       schema: {
         tags: ['Rooms'],
         summary: 'Join an existing room as a guest',
-        security: [{}, { serverPassword: [] }],
         headers: deviceIdHeader,
         params: roomIdParam,
         body: {
@@ -178,7 +180,6 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       schema: {
         tags: ['Rooms'],
         summary: 'Leave a room',
-        security: [{}, { serverPassword: [] }],
         headers: deviceIdHeader,
         params: roomIdParam,
         body: {
@@ -228,7 +229,6 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
     schema: {
       tags: ['Rooms'],
       summary: 'Get room status',
-      security: [{}, { serverPassword: [] }],
       params: roomIdParam,
       response: {
         200: {
@@ -266,7 +266,7 @@ export const roomRoutes: FastifyPluginAsync = async (app) => {
       tags: ['Rooms'],
       summary: 'Delete a room',
       description: 'Requires the `deleteSecret` returned by POST /api/rooms as a Bearer token.',
-      security: [{ deleteSecret: [] }, { deleteSecret: [], serverPassword: [] }],
+      security: [{ deleteSecret: [] }],
       params: roomIdParam,
       response: {
         204: { type: 'null', description: 'Room deleted' },
