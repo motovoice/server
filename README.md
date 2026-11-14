@@ -39,7 +39,6 @@ Create a .env file ([Example](https://github.com/motovoice/server/blob/main/dock
 #### 3. Generate secure secrets
 ```bash
 openssl rand -hex 32   # → POSTGRES_PASSWORD
-openssl rand -hex 64   # → JWT_SECRET
 openssl rand -hex 32   # → LIVEKIT_API_SECRET
 ```
 

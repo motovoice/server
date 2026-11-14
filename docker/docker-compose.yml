@@ -41,7 +41,6 @@ services:
     environment:
       NODE_ENV: production
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      JWT_SECRET: ${JWT_SECRET}
       SERVER_PASSWORD: ${SERVER_PASSWORD:-}
       STATS_TOKEN: ${STATS_TOKEN:-}
       PUBLIC_URL: ${PUBLIC_URL:-}

@@ -8,7 +8,6 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3000
-      JWT_SECRET: ${JWT_SECRET}
       SERVER_PASSWORD: ${SERVER_PASSWORD:-}
       STATS_TOKEN: ${STATS_TOKEN:-}
       PUBLIC_URL: ${PUBLIC_URL:-}

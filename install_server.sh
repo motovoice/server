@@ -70,7 +70,6 @@ ok "docker-compose.yml saved."
 # ----------------------------------------------------------------------
 info "Generating secrets ..."
 POSTGRES_PASSWORD="$(openssl rand -hex 32)"
-JWT_SECRET="$(openssl rand -hex 64)"
 LIVEKIT_API_SECRET="$(openssl rand -hex 32)"
 LIVEKIT_API_KEY="motovoice_key"
 ok "Secrets generated."
@@ -90,8 +89,6 @@ LOG_LEVEL=info
 POSTGRES_DB=motovoice
 POSTGRES_USER=motovoice
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-
-JWT_SECRET=${JWT_SECRET}
 
 SERVER_PASSWORD=
 STATS_TOKEN=

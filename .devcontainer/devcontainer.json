@@ -26,6 +26,6 @@
     }
   },
 
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "npm ci",
   "remoteUser": "node"
 }

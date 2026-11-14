@@ -3,7 +3,6 @@ import Fastify from 'fastify';
 import { createRequire } from 'module';
 const { version } = createRequire(import.meta.url)('../package.json');
 import cors from '@fastify/cors';
-import jwt from '@fastify/jwt';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { roomRoutes } from './routes/rooms.js';
@@ -26,10 +25,6 @@ const app = Fastify({
 await app.register(cors, {
   origin: '*',
   methods: ['GET', 'POST', 'DELETE'],
-});
-
-await app.register(jwt, {
-  secret: process.env.JWT_SECRET!,
 });
 
 await app.register(swagger, {
