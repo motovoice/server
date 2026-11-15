@@ -105,6 +105,23 @@ Internet
     └── WebSocket ─► [ LiveKit :7880 ]             
 ```
 
+## Development & tests
+
+```bash
+npm ci
+npm run typecheck      # sources and tests
+npm test               # unit + integration tests
+npm run test:unit      # unit tests only, no database needed
+npm run test:coverage  # all tests with coverage report
+```
+
+Integration tests run the API against a real PostgreSQL. Set `POSTGRES_URL`
+(already set in the devcontainer); the tests create and use a separate
+`<database>_test` database next to it, so your development data stays untouched.
+
+Every push and pull request runs typecheck, build, all tests and a Docker
+build via GitHub Actions. Releases only build images after these checks pass.
+
 ## This project uses AI-assisted development tools
 
 Human and AI co-author decisions; human reviews all output.

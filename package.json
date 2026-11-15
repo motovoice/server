@@ -7,7 +7,12 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@fastify/cors": "^11.4.3",
@@ -22,7 +27,9 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/pg": "^8.20.0",
+    "@vitest/coverage-v8": "^5.1.0",
     "tsx": "^4.19.4",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitest": "^5.1.0"
   }
 }

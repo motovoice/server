@@ -9,6 +9,7 @@ backend/node_modules/
 # Build
 src/dist/
 dist/
+coverage/
 
 # Certbot (wird zur Laufzeit befüllt)
 certbot/
