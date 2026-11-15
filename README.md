@@ -107,9 +107,5 @@ Internet
 
 ## This project uses AI-assisted development tools
 
-### Tools
-- Claude Code (Anthropic) · claude-sonnet-4-6
-
-### Oversight
 Human and AI co-author decisions; human reviews all output.
 
