@@ -1,0 +1,12 @@
+{
+  // Typecheck for sources and tests together (no emit). The build itself
+  // keeps using tsconfig.json, which only compiles src/.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "module": "esnext",
+    "moduleResolution": "bundler"
+  },
+  "include": ["src/**/*", "test/**/*", "vitest.config.ts"]
+}

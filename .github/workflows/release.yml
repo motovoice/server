@@ -11,7 +11,11 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   build:
+    needs: ci
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
